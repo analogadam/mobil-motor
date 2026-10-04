@@ -1,0 +1,6 @@
+data/
+node_modules/
+# Üçüncü taraf ikilileri (scrcpy, adb) ve derleme çıktıları repoya girmez
+tools/scrcpy/
+build/cikti/
+MobilMotor.exe

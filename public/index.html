@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>MobilMotor</title>
+  <link rel="icon" href="/icon.svg">
+  <link rel="stylesheet" href="/app.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="brand-mark"></span>MOBİLMOTOR</div>
+    <div class="lamps" id="lamps" role="button" tabindex="0" title="Güvenlik durumu"></div>
+    <div class="top-right">
+      <label class="seg" title="Ekran akış hızı">
+        <span>Akış</span>
+        <select id="stream">
+          <option value="fast">Hızlı</option>
+          <option value="normal" selected>Normal</option>
+          <option value="slow">Yavaş</option>
+          <option value="off">Durdur</option>
+        </select>
+      </label>
+      <label class="toggle" title="Odaktaki ekrana dokununca seçili tüm cihazlarda aynısını yap">
+        <input type="checkbox" id="mirror"><span>Ayna</span>
+      </label>
+      <button class="rec-btn" id="recBtn" title="Dokunuşları makro olarak kaydet">● Kaydet</button>
+    </div>
+  </header>
+
+  <aside class="rail">
+    <section>
+      <div class="rail-head">
+        <h2>Raf</h2>
+        <button class="link" id="selAll">tümünü seç</button>
+      </div>
+      <p class="hint" id="adbError" hidden></p>
+      <ul class="devlist" id="devlist"></ul>
+      <div class="cikarilan" id="cikarilanBox" hidden>
+        <h3>Çıkarılan cihazlar</h3>
+        <p class="hint">Panel bu cihazlara hiçbir komut göndermez.</p>
+        <ul class="devlist" id="cikarilanList"></ul>
+      </div>
+    </section>
+    <section>
+      <div class="rail-head"><h2>Google Play</h2></div>
+      <div class="acct" id="acct"><p>Denetleniyor…</p></div>
+    </section>
+    <section>
+      <div class="rail-head"><h2>Ağ çıkışları</h2><button class="link" id="proxyToggle">ekle</button></div>
+      <p class="hint">VPN sağlayıcının HTTP proxy uçları. Her emülatör farklı bir çıkıştan bağlanabilir. Şifreler yalnızca bu bilgisayarda saklanır.</p>
+      <ul class="proxylist" id="proxyList"></ul>
+      <form class="emu-new" id="proxyForm" hidden>
+        <input name="pname" placeholder="Ad (örn. Almanya-1)" maxlength="40" required>
+        <input name="purl" placeholder="http://kullanici:sifre@sunucu:8080" autocomplete="off" spellcheck="false" required>
+        <input name="ptz" placeholder="Saat dilimi (isteğe bağlı, örn. Europe/Berlin)" autocomplete="off" spellcheck="false">
+        <button type="submit">Kaydet</button>
+      </form>
+    </section>
+    <section>
+      <div class="rail-head"><h2>Sanal cihazlar</h2><button class="link" id="emuRefresh">yenile</button></div>
+      <div class="acct" id="sdkBox" hidden></div>
+      <label class="mini hafif" title="Animasyonlar kapalı, pil tasarrufu açık; Mesajlar gibi gereksiz uygulamalar kapalı; Play Store, Chrome, YouTube vb. yalnızca açıkken çalışır, arka planda değil. Kapatınca hepsi geri alınır.">
+        <input type="checkbox" id="hafifMod" checked> Hafif mod <small>(önerilen — işlemciyi korur)</small>
+      </label>
+      <label class="mini hafif" title="Emülatörde Chrome açıkken kendiliğinden kapanırsa (çökme, bellek) birkaç saniye içinde yeniden açılır; Chrome sekmelerini geri yükler. Chrome'dan çıkıp başka uygulamaya ya da ana ekrana geçtiysen dokunmaz.">
+        <input type="checkbox" id="chromeKoru" checked> Chrome'u açık tut <small>(kapanırsa yeniden açar)</small>
+      </label>
+      <label class="mini hafif" title="Her emülatöre ayrılan Android belleği. Otomatik: 24 GB'tan az RAM'li bilgisayarda telefon 3 GB, tablet 4 GB; değilse telefon 4 GB, tablet 6 GB. Değişiklik emülatör bir sonraki açılışında geçerli olur (o açılış biraz uzun sürer). Bellek yetmeyecekse açılışta uyarı çıkar.">
+        Emülatör belleği
+        <select id="bellekSel">
+          <option value="otomatik" selected>Otomatik</option>
+          <option value="3072">3 GB (tablet 4 GB)</option>
+          <option value="4096">4 GB (tablet 6 GB)</option>
+        </select>
+      </label>
+      <label class="mini hafif" title="Bu süre boyunca kullanılmayan emülatör dondurulur (içindeki Android işlemci harcamaz). Tıklayınca ya da ona bir işlem gönderince kendiliğinden uyanır. Canlı görüntü, makro ya da logcat açıksa uyutulmaz.">
+        Otomatik uyku
+        <select id="uykuSel">
+          <option value="0" selected>Kapalı (önerilen: hepsi hep çalışır)</option>
+          <option value="1">1 dk sonra</option>
+          <option value="3">3 dk sonra</option>
+          <option value="10">10 dk sonra</option>
+          <option value="30">30 dk sonra</option>
+        </select>
+      </label>
+      <label class="mini hafif" title="Uykuda 10 dakika kalan emülatörün durumu kaydedilir ve kapatılır: işlemci %0, RAM boşalır. Uyandırınca açık uygulamalarıyla kaldığı yerden ~10 saniyede döner.">
+        <input type="checkbox" id="derinUyku"> 10 dk sonra derin uyku <small>(işlemci %0)</small>
+      </label>
+      <ul class="avdlist" id="avdlist"></ul>
+      <form class="emu-new" id="emuNew">
+        <div class="row">
+          <input name="avdname" value="Sanal" maxlength="40" pattern="[A-Za-z0-9_.\-]{1,40}" aria-label="İsim" required>
+          <select name="profile" aria-label="Profil"></select>
+        </div>
+        <div class="row">
+          <label class="mini">Adet <input name="count" type="number" min="1" max="10" value="1"></label>
+          <label class="mini"><input name="headless" type="checkbox" checked> penceresiz</label>
+        </div>
+        <label class="mini"><input name="fromTemplate" type="checkbox" disabled> Google hesabımla aç</label>
+        <label class="mini net">Ağ çıkışı <select name="proxy" id="proxySel"><option value="">Doğrudan (bu bilgisayar)</option></select></label>
+        <button type="submit">Oluştur ve başlat</button>
+      </form>
+    </section>
+    <section class="tehlike">
+      <div class="rail-head"><h2>Tehlikeli bölge</h2></div>
+      <button class="danger-btn" id="sifirlaBtn">⚠ Motoru sıfırla</button>
+      <p class="hint">Tüm sanal cihazlar, makrolar, kayıtlar, ağ çıkışları, hesap şablonu ve ayarlar silinir; MobilMotor ilk kurulum haline döner. Geri alınamaz.</p>
+    </section>
+  </aside>
+
+  <main class="stage" id="stage"></main>
+
+  <aside class="panel">
+    <div class="target-line" id="targetLine"></div>
+    <nav class="tabs" id="tabs">
+      <button data-tab="kontrol" class="on">Kontrol</button>
+      <button data-tab="uygulama">Uygulama</button>
+      <button data-tab="makro">Makro</button>
+      <button data-tab="log">Logcat</button>
+      <button data-tab="kabuk">Kabuk</button>
+      <button data-tab="guvenlik">Güvenlik</button>
+      <button data-tab="kayit">Kayıt</button>
+    </nav>
+
+    <section class="tab on" data-tab="kontrol">
+      <div class="keys">
+        <button data-key="back">◁ Geri</button>
+        <button data-key="home">○ Ana</button>
+        <button data-key="recents">▢ Son</button>
+        <button data-act="notifications">Bildirim</button>
+        <button data-key="volup">Ses +</button>
+        <button data-key="voldown">Ses −</button>
+        <button data-key="power">Güç</button>
+        <button data-key="wakeup">Uyandır</button>
+        <button data-act="rotate">Döndür</button>
+      </div>
+      <form class="stack" id="textForm">
+        <label>Metin yaz <small>(canlı cihazda Türkçe de olur)</small></label>
+        <div class="row"><input name="text" autocomplete="off" spellcheck="false"><button>Gönder</button></div>
+        <label class="mini"><input type="checkbox" name="enter"> ardından Enter</label>
+      </form>
+      <form class="stack" id="urlForm">
+        <label>Adres aç</label>
+        <div class="row"><input name="url" type="url" placeholder="https://" autocomplete="off"><button>Aç</button></div>
+      </form>
+      <div class="stack">
+        <label>Dosya</label>
+        <div class="row">
+          <button id="apkBtn">APK kur</button>
+          <button id="pushBtn">Telefona gönder</button>
+        </div>
+        <input type="file" id="apkFile" accept=".apk" hidden multiple>
+        <input type="file" id="pushFile" hidden multiple>
+        <div class="progress" id="upProgress" hidden><span></span></div>
+      </div>
+      <div class="stack">
+        <label>Odaktaki cihaz</label>
+        <div class="row">
+          <button id="capBtn">Ekran görüntüsü</button>
+          <button id="scrcpyBtn">Akıcı pencere</button>
+        </div>
+        <label class="mini" id="uyanikRow" hidden title="İşaretliyse bu emülatör otomatik uykuya/derin uykuya hiç girmez; içindeki uygulamalar, indirmeler ve testler arkada çalışmaya devam eder (işlemci harcar).">
+          <input type="checkbox" id="uyanikCb"> Bu emülatörü uyutma <small>(arkada çalışsın)</small>
+        </label>
+        <button class="link" data-folder="captures">görüntü klasörünü aç</button>
+      </div>
+      <div class="results" id="ctlResults"></div>
+    </section>
+
+    <section class="tab" data-tab="uygulama">
+      <div class="row">
+        <input id="appFilter" placeholder="Paket ara…" autocomplete="off" spellcheck="false">
+        <label class="mini"><input type="checkbox" id="appAll"> sistem</label>
+      </div>
+      <p class="hint">Liste odaktaki cihazdan okunur; düğmeler tüm hedeflere uygulanır.</p>
+      <form class="stack" id="playForm">
+        <label>Play Store'dan kur <small>(hedeflerde Google hesabı açık olmalı)</small></label>
+        <div class="row"><input name="pkg" placeholder="com.opera.browser" autocomplete="off" spellcheck="false"><button>Kur</button></div>
+        <div class="row"><button type="button" id="playOpera">Opera'yı kur</button></div>
+        <p class="hint" id="playDurum"></p>
+      </form>
+      <ul class="applist" id="applist"></ul>
+    </section>
+
+    <section class="tab" data-tab="makro">
+      <p class="hint">Üstteki <b>● Kaydet</b> ile odaktaki ekranda yaptıklarını kaydet. Koordinatlar oransal saklanır: telefon, tablet ve emülatörde aynı makro çalışır.</p>
+      <div class="recbox" id="recBox" hidden>
+        <div class="row"><strong id="recCount">0 adım</strong><button class="link" id="recWait">+ 1 sn bekle</button></div>
+        <div class="row"><input id="recName" placeholder="Makro adı" maxlength="40"><button id="recSave">Kaydet</button></div>
+      </div>
+      <div class="row"><label class="mini">Tekrar <input id="macroRepeat" type="number" min="1" max="1000" value="1"></label></div>
+      <ul class="macrolist" id="macrolist"></ul>
+      <h3>Görevler</h3>
+      <ul class="joblist" id="joblist"></ul>
+      <button class="link" data-folder="macros">makro klasörünü aç</button>
+    </section>
+
+    <section class="tab" data-tab="log">
+      <div class="row">
+        <input id="logPkg" placeholder="paket (boş = tümü)" autocomplete="off" spellcheck="false">
+        <select id="logLevel">
+          <option value="V">Hepsi</option>
+          <option value="D">Debug+</option>
+          <option value="I">Info+</option>
+          <option value="W">Uyarı+</option>
+          <option value="E" selected>Hata+</option>
+        </select>
+      </div>
+      <div class="row">
+        <button id="logStart">Başlat</button>
+        <button id="logStop">Durdur</button>
+        <button id="logClear">Temizle</button>
+        <input id="logFind" placeholder="süz…" autocomplete="off">
+      </div>
+      <pre class="logview" id="logview"></pre>
+    </section>
+
+    <section class="tab" data-tab="kabuk">
+      <form class="stack" id="shellForm">
+        <label>adb shell <small>— tüm hedeflerde çalışır</small></label>
+        <textarea name="cmd" rows="3" spellcheck="false" placeholder="pm list packages -3"></textarea>
+        <button>Çalıştır</button>
+      </form>
+      <div class="results" id="shellResults"></div>
+    </section>
+
+    <section class="tab" data-tab="guvenlik">
+      <div class="row"><button id="secRefresh">Yeniden denetle</button></div>
+      <ul class="checks" id="checks"></ul>
+    </section>
+
+    <section class="tab" data-tab="kayit">
+      <p class="hint">Yalnızca bu bilgisayarda tutulur. Yazdığın metinlerin içeriği kaydedilmez.</p>
+      <ul class="auditlist" id="auditlist"></ul>
+      <button class="link" data-folder="logs">kayıt klasörünü aç</button>
+    </section>
+  </aside>
+
+  <dialog class="dlg" id="sifirlaDlg" aria-labelledby="sifirlaBaslik">
+    <h3 id="sifirlaBaslik">⚠ Motoru sıfırla — emin misiniz?</h3>
+    <p>MobilMotor ilk kurulum haline döner. <b>Bu işlem geri alınamaz.</b> Silinecekler:</p>
+    <ul id="sifirlaList"></ul>
+    <p class="hint">Silinmez: Android SDK (Android Studio ile ortak) ve telefonlarındaki veriler/uygulamalar.</p>
+    <label class="mini"><input type="checkbox" id="sifirlaOnay"> Anladım, her şey silinecek ve geri alınamaz</label>
+    <p class="hint" id="sifirlaDurum"></p>
+    <div class="row dlg-btns">
+      <button id="sifirlaVazgec">Vazgeç</button>
+      <button id="sifirlaEvet" class="danger-btn" disabled>Evet, her şeyi sil ve sıfırla</button>
+    </div>
+  </dialog>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+</body>
+</html>
